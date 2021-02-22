@@ -37,10 +37,14 @@ public interface Temporal {
 
     /**
      * Returns an adjusted object.
+     *
      * @param adjuster The adjuster to use.
      * @return The adjusted object.
      */
-    @NotNull Temporal with(@NotNull TemporalAdjuster adjuster);
+    @NotNull
+    default Temporal with(@NotNull TemporalAdjuster adjuster) {
+        return adjuster.adjustInto(this);
+    }
 
     /**
      * Returns a object with the given field updated.
