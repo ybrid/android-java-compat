@@ -56,10 +56,20 @@ public interface Temporal {
 
     /**
      * Adds a given temporal amount.
+     *
      * @param amount The amount to add.
      * @return The addition result.
      */
-    @NotNull Temporal plus(@NotNull TemporalAmount amount);
+    @NotNull
+    default Temporal plus(@NotNull TemporalAmount amount) {
+        Temporal cur = this;
+
+        for (final @NotNull TemporalUnit unit : amount.getUnits()) {
+            cur = cur.plus(amount.get(unit), unit);
+        }
+
+        return cur;
+    }
 
     /**
      * Adds a given temporal amount.
@@ -71,10 +81,20 @@ public interface Temporal {
 
     /**
      * Subtracts a given temporal amount.
+     *
      * @param amount The amount to subtract.
      * @return The subtraction result.
      */
-    @NotNull Temporal minus(@NotNull TemporalAmount amount);
+    @NotNull
+    default Temporal minus(@NotNull TemporalAmount amount) {
+        Temporal cur = this;
+
+        for (final @NotNull TemporalUnit unit : amount.getUnits()) {
+            cur = cur.minus(amount.get(unit), unit);
+        }
+
+        return cur;
+    }
 
     /**
      * Subtracts a given temporal amount.
