@@ -37,7 +37,7 @@ import java.util.TimeZone;
  * <P>
  * Only a subset of the full Java specifications are implemented here as the rest it outside of the scope of this project at this point.
  */
-public final class Instant extends PrivateUtils.SecondsNanosecondsBaseClass<Instant> implements Temporal, TemporalAdjuster, TemporalAccessor {
+public final class Instant extends PrivateUtils.SecondsNanosecondsBaseClass<Instant> implements Temporal, TemporalAdjuster {
     public static final Instant EPOCH = new Instant(0, 0);
     public static final Instant MAX = new Instant(31556889864403199L, 999999999);
     public static final Instant MIN = new Instant(-31557014167219200L, 0);

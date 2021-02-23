@@ -27,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * This interface re-implements {@link java.time.temporal.Temporal} as it is not provided by all versions of Android.
  */
-public interface Temporal {
+public interface Temporal extends TemporalAccessor {
     /**
      * Returns whether this temporal supports a given unit.
      * @param unit The unit to check for.
