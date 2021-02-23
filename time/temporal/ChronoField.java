@@ -22,8 +22,6 @@
 
 package java.time.temporal;
 
-import android.os.Build;
-import androidx.annotation.RequiresApi;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
