@@ -29,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.Serializable;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalField;
 import java.time.temporal.TemporalUnit;
 import java.util.Objects;
 
@@ -40,6 +41,11 @@ final class PrivateUtils {
     static final long NS_PER_S = 1_000_000_000L;
     static final long MS_PER_NS = 1_000_000L;
     static final long MS_PER_S = 1_000L;
+
+    @Contract("_ -> new")
+    static @NotNull RuntimeException unsupportedTemporalField(@NotNull TemporalField field) {
+        return new RuntimeException("Unsupported TemporalField: " + field);
+    }
 
     static int toInteger(long value) throws ArithmeticException {
         if (value < (long)Integer.MIN_VALUE || value > (long)Integer.MAX_VALUE)

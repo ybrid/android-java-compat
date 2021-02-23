@@ -42,11 +42,6 @@ public final class Instant extends PrivateUtils.SecondsNanosecondsBaseClass<Inst
     public static final Instant MAX = new Instant(31556889864403199L, 999999999);
     public static final Instant MIN = new Instant(-31557014167219200L, 0);
 
-    @Contract("_ -> new")
-    private @NotNull RuntimeException unsupportedTemporalField(@NotNull TemporalField field) {
-        return new RuntimeException("Unsupported TemporalField: " + field);
-    }
-
     @Contract(pure = true)
     private Instant(long seconds, long nanoseconds) {
         super(seconds, nanoseconds);
@@ -157,7 +152,7 @@ public final class Instant extends PrivateUtils.SecondsNanosecondsBaseClass<Inst
             }
         }
 
-        throw unsupportedTemporalField(field);
+        throw PrivateUtils.unsupportedTemporalField(field);
     }
 
     @Override
@@ -182,7 +177,7 @@ public final class Instant extends PrivateUtils.SecondsNanosecondsBaseClass<Inst
             }
         }
 
-        throw unsupportedTemporalField(field);
+        throw PrivateUtils.unsupportedTemporalField(field);
     }
 
     /**
