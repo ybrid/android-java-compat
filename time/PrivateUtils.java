@@ -41,6 +41,78 @@ final class PrivateUtils {
     static final long MS_PER_NS = 1_000_000L;
     static final long MS_PER_S = 1_000L;
 
+    static int toInteger(long value) throws ArithmeticException {
+        if (value < (long)Integer.MIN_VALUE || value > (long)Integer.MAX_VALUE)
+            throw new ArithmeticException("Integer overflow");
+        return (int)value;
+    }
+
+    static private @NotNull ArithmeticException longOverflow() {
+        return new ArithmeticException("long overflow");
+    }
+
+    @Contract(pure = true)
+    static long mulAdd(long mulA, long mulB, long add) throws ArithmeticException {
+        // Optimise if needed.
+        return add(mul(mulA, mulB), add);
+    }
+
+    static long mul(long a, long b) {
+        final long res = a * b;
+        final long absA = Math.abs(a);
+        final long absB = Math.abs(b);
+
+        //noinspection MagicNumber
+        if (((absA | absB) >>> 31) != 0) {
+            if (((b != 0) && ((res / b) != a)) || (a == Long.MIN_VALUE && b == -1)) {
+                throw longOverflow();
+            }
+        }
+
+        return res;
+    }
+
+    static long add(long a, long b) throws ArithmeticException {
+        final long res = a + b;
+
+        if (((a ^ res) & (b ^ res)) < 0) {
+            throw longOverflow();
+        }
+
+        return res;
+    }
+
+    static long subtract(long a, long b) throws ArithmeticException {
+        final long res = a - b;
+
+        if (((a ^ b) & (a ^ res)) < 0) {
+            throw longOverflow();
+        }
+
+        return res;
+    }
+
+    static long increment(long a) throws ArithmeticException {
+        if (a == Long.MAX_VALUE)
+            throw longOverflow();
+
+        return a + 1;
+    }
+
+    static long decrement(long a) throws ArithmeticException {
+        if (a == Long.MIN_VALUE)
+            throw longOverflow();
+
+        return a + 1;
+    }
+
+    static long negate(long a) {
+        if (a == Long.MIN_VALUE)
+            throw longOverflow();
+
+        return -a;
+    }
+
     static abstract class SecondsNanosecondsBaseClass<T extends SecondsNanosecondsBaseClass<T>> implements Comparable<T>, Serializable {
         protected final long seconds;
         protected final long nanoseconds;
@@ -53,13 +125,13 @@ final class PrivateUtils {
         @Contract(pure = true)
         protected SecondsNanosecondsBaseClass(long seconds, long nanoseconds) {
             while (nanoseconds < 0) {
-                seconds--;
-                nanoseconds += PrivateUtils.NS_PER_S;
+                seconds = decrement(seconds);
+                nanoseconds = PrivateUtils.add(nanoseconds, PrivateUtils.NS_PER_S);
             }
 
             while (nanoseconds >= PrivateUtils.NS_PER_S) {
-                seconds++;
-                nanoseconds -= PrivateUtils.NS_PER_S;
+                seconds = increment(seconds);
+                nanoseconds = subtract(nanoseconds, PrivateUtils.NS_PER_S);
             }
 
             this.seconds = seconds;
@@ -82,7 +154,7 @@ final class PrivateUtils {
 
         @Contract(pure = true, value = "_, _ -> new")
         @NotNull T add(long s, long ns) {
-            return newInstance(seconds + s, nanoseconds + ns);
+            return newInstance(PrivateUtils.add(seconds, s), PrivateUtils.add(nanoseconds, ns));
         }
 
         @Contract(value = "_ -> new", pure = true)
@@ -94,7 +166,7 @@ final class PrivateUtils {
                 case NANOS:
                     return add(0, amountToAdd);
                 case MILLIS:
-                    return add(0, amountToAdd * MS_PER_NS);
+                    return add(0, mul(amountToAdd, MS_PER_NS));
                 case SECONDS:
                     return add(amountToAdd, 0);
             }
@@ -104,7 +176,7 @@ final class PrivateUtils {
 
         @Contract(value = "_ -> new", pure = true)
         public @NotNull T minus(long amountToSubtract, @NotNull TemporalUnit unit) {
-            return plus(-amountToSubtract, unit);
+            return plus(negate(amountToSubtract), unit);
         }
 
         /**
@@ -114,7 +186,7 @@ final class PrivateUtils {
          */
         @Contract(value = "_ -> new", pure = true)
         public @NotNull T plusMillis(long millisToAdd) {
-            return add(0, millisToAdd * MS_PER_NS);
+            return add(0, mul(millisToAdd, MS_PER_NS));
         }
 
         /**
@@ -144,7 +216,7 @@ final class PrivateUtils {
          */
         @Contract(value = "_ -> new", pure = true)
         public @NotNull T minusMillis(long millisToSubtract) {
-            return add(0, -millisToSubtract* MS_PER_NS);
+            return add(0, mul(millisToSubtract, -MS_PER_NS));
         }
 
         /**
@@ -154,7 +226,7 @@ final class PrivateUtils {
          */
         @Contract(value = "_ -> new", pure = true)
         public @NotNull T minusNanos(long nanosToSubtract) {
-            return add(0, -nanosToSubtract);
+            return add(0, negate(nanosToSubtract));
         }
 
         /**
@@ -164,7 +236,7 @@ final class PrivateUtils {
          */
         @Contract(value = "_ -> new", pure = true)
         public @NotNull T minusSeconds(long secondsToSubtract) {
-            return add(-secondsToSubtract, 0);
+            return add(negate(secondsToSubtract), 0);
         }
 
         /**
@@ -173,7 +245,7 @@ final class PrivateUtils {
          */
         @Contract(pure = true)
         public int getNano() {
-            return (int) nanoseconds;
+            return toInteger(nanoseconds);
         }
 
     }

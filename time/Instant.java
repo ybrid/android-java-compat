@@ -168,9 +168,7 @@ public final class Instant extends PrivateUtils.SecondsNanosecondsBaseClass<Inst
     @Override
     public int get(@NotNull TemporalField field) {
         final long val = getLong(field);
-        if (val < Integer.MIN_VALUE || val > Integer.MAX_VALUE)
-            throw new ArithmeticException();
-        return (int) val;
+        return PrivateUtils.toInteger(val);
     }
 
     @Override
@@ -202,7 +200,7 @@ public final class Instant extends PrivateUtils.SecondsNanosecondsBaseClass<Inst
      */
     @Contract(pure = true)
     public long toEpochMilli() {
-        return (seconds * PrivateUtils.MS_PER_S) + (nanoseconds / PrivateUtils.MS_PER_NS);
+        return PrivateUtils.mulAdd(seconds, PrivateUtils.MS_PER_S, nanoseconds / PrivateUtils.MS_PER_NS);
     }
 
     /**
