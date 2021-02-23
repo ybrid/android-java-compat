@@ -39,44 +39,25 @@ import java.util.TimeZone;
  * <P>
  * Only a subset of the full Java specifications are implemented here as the rest it outside of the scope of this project at this point.
  */
-public final class Instant implements Temporal, TemporalAdjuster, TemporalAccessor, Comparable<Instant>, Serializable {
+public final class Instant extends PrivateUtils.SecondsNanosecondsBaseClass<Instant> implements Temporal, TemporalAdjuster, TemporalAccessor {
     public static final Instant EPOCH = new Instant(0, 0);
     public static final Instant MAX = new Instant(31556889864403199L, 999999999);
     public static final Instant MIN = new Instant(-31557014167219200L, 0);
-
-    private static final long NS_PER_S = 1_000_000_000L;
-    private static final long MS_PER_S = 1_000L;
-    private static final int MS_PER_NS = 1_000_000;
-
-    private final long seconds;
-    private final long nanoseconds;
 
     @Contract("_ -> new")
     private @NotNull RuntimeException unsupportedTemporalField(@NotNull TemporalField field) {
         return new RuntimeException("Unsupported TemporalField: " + field);
     }
 
-    @Contract(pure = true, value = "_, _ -> new")
-    private @NotNull Instant add(long s, long ns) {
-        s += seconds;
-        ns += nanoseconds;
-
-        while (ns < 0) {
-            s--;
-            ns += NS_PER_S;
-        }
-
-        while (ns > NS_PER_S) {
-            s++;
-            ns -= NS_PER_S;
-        }
-
-        return new Instant(s, ns);
+    @Contract(pure = true)
+    private Instant(long seconds, long nanoseconds) {
+        super(seconds, nanoseconds);
     }
 
-    private Instant(long seconds, long nanoseconds) {
-        this.seconds = seconds;
-        this.nanoseconds = nanoseconds;
+    @Contract(value = "_, _ -> new", pure = true)
+    @Override
+    @NotNull Instant newInstance(long s, long ns) {
+        return new Instant(s, ns);
     }
 
     /**
@@ -116,7 +97,7 @@ public final class Instant implements Temporal, TemporalAdjuster, TemporalAccess
      */
     @Contract(value = "_ -> new", pure = true)
     public @NotNull static Instant ofEpochSecond(long epochSecond, long nanoAdjustment) {
-        return ofEpochSecond(epochSecond).plusNanos(nanoAdjustment);
+        return new Instant(epochSecond, nanoAdjustment);
     }
 
     /**
@@ -126,8 +107,8 @@ public final class Instant implements Temporal, TemporalAdjuster, TemporalAccess
      */
     @Contract(value = "_ -> new", pure = true)
     public static @NotNull Instant ofEpochMilli(long epochMilli) {
-        long s = epochMilli / MS_PER_S;
-        long ns = (epochMilli - s * MS_PER_S) * MS_PER_NS;
+        long s = epochMilli / PrivateUtils.MS_PER_S;
+        long ns = (epochMilli - s * PrivateUtils.MS_PER_S) * PrivateUtils.MS_PER_NS;
         return new Instant(s, ns);
     }
 
@@ -181,90 +162,6 @@ public final class Instant implements Temporal, TemporalAdjuster, TemporalAccess
         throw unsupportedTemporalField(field);
     }
 
-    @Contract(value = "_ -> new", pure = true)
-    @Override
-    public @NotNull Temporal plus(long amountToAdd, @NotNull TemporalUnit unit) {
-        if (!(unit instanceof ChronoUnit))
-            throw new IllegalArgumentException();
-
-        switch ((ChronoUnit)unit) {
-            case NANOS:
-                return add(0, amountToAdd);
-            case MILLIS:
-                return add(0, amountToAdd * MS_PER_NS);
-            case SECONDS:
-                return add(amountToAdd, 0);
-        }
-
-        throw new IllegalArgumentException();
-    }
-
-    @Contract(value = "_ -> new", pure = true)
-    @Override
-    public @NotNull Temporal minus(long amountToSubtract, @NotNull TemporalUnit unit) {
-        return plus(-amountToSubtract, unit);
-    }
-
-    /**
-     * Adds the given amount of time to the instant.
-     * @param millisToAdd The amount to add in [ms].
-     * @return The new instant.
-     */
-    @Contract(value = "_ -> new", pure = true)
-    public @NotNull Instant plusMillis(long millisToAdd) {
-        return add(0, millisToAdd* MS_PER_NS);
-    }
-
-    /**
-     * Adds the given amount of time to the instant.
-     * @param nanosToAdd The amount to add in [ns].
-     * @return The new instant.
-     */
-    @Contract(value = "_ -> new", pure = true)
-    public @NotNull Instant plusNanos(long nanosToAdd) {
-        return add(0, nanosToAdd);
-    }
-
-    /**
-     * Adds the given amount of time to the instant.
-     * @param secondsToAdd The amount to add in [s].
-     * @return The new instant.
-     */
-    @Contract(value = "_ -> new", pure = true)
-    public @NotNull Instant plusSeconds(long secondsToAdd) {
-        return add(secondsToAdd, 0);
-    }
-
-    /**
-     * Subtracts the given amount of time from the instant.
-     * @param millisToSubtract The amount to subtract in [ms].
-     * @return The new instant.
-     */
-    @Contract(value = "_ -> new", pure = true)
-    public @NotNull Instant minusMillis(long millisToSubtract) {
-        return add(0, -millisToSubtract* MS_PER_NS);
-    }
-
-    /**
-     * Subtracts the given amount of time from the instant.
-     * @param nanosToSubtract The amount to subtract in [ns].
-     * @return The new instant.
-     */
-    @Contract(value = "_ -> new", pure = true)
-    public @NotNull Instant minusNanos(long nanosToSubtract) {
-        return add(0, -nanosToSubtract);
-    }
-
-    /**
-     * Subtracts the given amount of time from the instant.
-     * @param secondsToSubtract The amount to subtract in [s].
-     * @return The new instant.
-     */
-    @Contract(value = "_ -> new", pure = true)
-    public @NotNull Instant minusSeconds(long secondsToSubtract) {
-        return add(-secondsToSubtract, 0);
-    }
-
     @Override
     public long until(@NotNull Temporal endExclusive, @NotNull TemporalUnit unit) {
         return 0; // TODO.
@@ -302,21 +199,12 @@ public final class Instant implements Temporal, TemporalAdjuster, TemporalAccess
     }
 
     /**
-     * Gets the value of nanoseconds since full second as defined by {@link ChronoField#NANO_OF_SECOND}.
-     * @return The value.
-     */
-    @Contract(pure = true)
-    public int getNano() {
-        return (int) nanoseconds;
-    }
-
-    /**
      * Returns the milliseconds since the epoch as defined by {@link ChronoField#INSTANT_SECONDS}.
      * @return The passed milliseconds.
      */
     @Contract(pure = true)
     public long toEpochMilli() {
-        return (seconds * MS_PER_S) + (nanoseconds / MS_PER_NS);
+        return (seconds * PrivateUtils.MS_PER_S) + (nanoseconds / PrivateUtils.MS_PER_NS);
     }
 
     /**
@@ -344,11 +232,6 @@ public final class Instant implements Temporal, TemporalAdjuster, TemporalAccess
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         return compareTo((Instant) o) == 0;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(seconds, nanoseconds);
     }
 
     @SuppressWarnings({"UseOfObsoleteDateTimeApi", "HardCodedStringLiteral"})
