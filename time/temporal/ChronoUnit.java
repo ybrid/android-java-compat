@@ -36,15 +36,15 @@ public enum ChronoUnit implements TemporalUnit {
     /**
      * [ms]
      */
-    MILLIS(null, false, false, true),
+    MILLIS(Duration.ofMillis(1), false, false, true),
     /**
      * [ns]
      */
-    NANOS(null, false, false, true),
+    NANOS(Duration.ofNanos(1), false, false, true),
     /**
      * [s]
      */
-    SECONDS(null, false, false, true);
+    SECONDS(Duration.ofSeconds(1), false, false, true);
 
     private final Duration duration;
     private final boolean durationEstimated;

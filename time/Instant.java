@@ -157,7 +157,7 @@ public final class Instant extends PrivateUtils.SecondsNanosecondsBaseClass<Inst
 
     @Override
     public long until(@NotNull Temporal endExclusive, @NotNull TemporalUnit unit) {
-        return 0; // TODO.
+        return Duration.between(this, endExclusive).to(unit);
     }
 
     @Override

@@ -38,6 +38,11 @@ import java.util.Objects;
  */
 @ApiStatus.Internal
 final class PrivateUtils {
+    // Values from the Java Specs version 8.
+    static final int S_PER_MINUTE = 60;
+    static final int S_PER_HOUR = 3600;
+    static final int S_PER_DAY = 86400;
+
     static final long NS_PER_S = 1_000_000_000L;
     static final long MS_PER_NS = 1_000_000L;
     static final long MS_PER_S = 1_000L;
