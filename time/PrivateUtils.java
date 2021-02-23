@@ -46,6 +46,8 @@ final class PrivateUtils {
         protected final long nanoseconds;
 
         @Contract(value = "_, _ -> new", pure = true)
+        @ApiStatus.Internal
+        @ApiStatus.OverrideOnly
         abstract @NotNull T newInstance(long s, long ns);
 
         @Contract(pure = true)
