@@ -47,6 +47,11 @@ final class PrivateUtils {
         return new RuntimeException("Unsupported TemporalField: " + field);
     }
 
+    @Contract("_ -> new")
+    static @NotNull RuntimeException unsupportedTemporalUnit(@NotNull TemporalUnit unit) {
+        return new RuntimeException("Unsupported TemporalUnit: " + unit);
+    }
+
     static int toInteger(long value) throws ArithmeticException {
         if (value < (long)Integer.MIN_VALUE || value > (long)Integer.MAX_VALUE)
             throw new ArithmeticException("Integer overflow");
@@ -254,5 +259,19 @@ final class PrivateUtils {
             return toInteger(nanoseconds);
         }
 
+        long to(@NotNull TemporalUnit unit) {
+            if (unit instanceof ChronoUnit) {
+                switch ((ChronoUnit) unit) {
+                    case NANOS:
+                        return PrivateUtils.mulAdd(seconds, PrivateUtils.NS_PER_S, nanoseconds);
+                    case MILLIS:
+                        return PrivateUtils.mulAdd(seconds, PrivateUtils.MS_PER_S, nanoseconds / PrivateUtils.MS_PER_NS);
+                    case SECONDS:
+                        return seconds;
+                }
+            }
+
+            throw unsupportedTemporalUnit(unit);
+        }
     }
 }

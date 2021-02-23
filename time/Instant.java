@@ -195,7 +195,7 @@ public final class Instant extends PrivateUtils.SecondsNanosecondsBaseClass<Inst
      */
     @Contract(pure = true)
     public long toEpochMilli() {
-        return PrivateUtils.mulAdd(seconds, PrivateUtils.MS_PER_S, nanoseconds / PrivateUtils.MS_PER_NS);
+        return to(ChronoUnit.MILLIS);
     }
 
     /**
