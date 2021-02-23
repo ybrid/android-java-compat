@@ -227,13 +227,6 @@ public final class Instant extends PrivateUtils.SecondsNanosecondsBaseClass<Inst
         return compareTo(otherInstant) < 0;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        return compareTo((Instant) o) == 0;
-    }
-
     @SuppressWarnings({"UseOfObsoleteDateTimeApi", "HardCodedStringLiteral"})
     @SuppressLint("SimpleDateFormat")
     @Override
